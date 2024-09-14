@@ -34,6 +34,7 @@ int main(void)
             printf("Error in reading the pipe\n");
         printf("Read from child : %d\n", y);
         close(pipefd[0]);
+        wait(NULL);
     }
     return (0);
 }

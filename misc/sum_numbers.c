@@ -6,7 +6,7 @@
 int main(void)
 {
     int nums[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    int arr_size = sizeof(nums) / sizeof(int); 
+    int arr_size = sizeof(nums) / sizeof(int);
     int pipefd[2];
 
     if (pipe(pipefd) == -1)
@@ -19,6 +19,7 @@ int main(void)
         printf("Error in fork()-ing...\n");
     if (pid == 0) // child_process
     {
+        
         start = 0;
         end = arr_size / 2;
     }
