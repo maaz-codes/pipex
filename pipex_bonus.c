@@ -52,98 +52,87 @@ static char **extract_path_env(char **env)
     return (absoulute_paths);
 }
 
-static char *set_own_path(char *cmd)
+static char *ft_cmd_exits(char **env, char *cmd)
 {
-    int i;
-
-    i = 0;
-    if (cmd[0] == '/')
-        return (cmd);
-    return (NULL);
-}
-
-static char *ft_cmd_exits(char **env, char *cmd, int pid)
-{
-    char **a_paths;
+    char **absoulute_paths;
     char *temp_str_join;
     char *path;
     int i;
 
     i = 0;
+    
     path = NULL;
-    if (!cmd || set_own_path(cmd))
-        return (cmd); // ft_split fails
-    a_paths = extract_path_env(env);
-    while (a_paths[i])
+    if (!cmd)
+        return (NULL); // ft_split fails
+    absoulute_paths = extract_path_env(env);
+    i = 0;
+    while (absoulute_paths[i])
     {
-        temp_str_join = ft_strjoin(a_paths[i], "/");
-        free(a_paths[i]);
-        a_paths[i] = ft_strjoin(temp_str_join, cmd);
+        temp_str_join = ft_strjoin(absoulute_paths[i], "/");
+        free(absoulute_paths[i]);
+        absoulute_paths[i] = ft_strjoin(temp_str_join, cmd);
         free(temp_str_join);
-        if (access(a_paths[i], F_OK) == 0 && access(a_paths[i], X_OK) == 0)
-        {
-                path = ft_strdup(a_paths[i]);
-                break ;
-        }
+        if (access(absoulute_paths[i], F_OK) == 0)
+            if (access(absoulute_paths[i], X_OK) == 0)
+                path = ft_strdup(absoulute_paths[i]);
         i++;
     }
-    free_array(a_paths);
+    free_array(absoulute_paths);
     return (path);
 }
 
-static int child_process(int *pipefd, char **argv, char **env, int pid)
+static int child_process(int *pipefd, char **argv, char **env, int cmd_index)
 {
     int fd1;
     char **cmd;
     char *path;
 
-    cmd = set_cmd_arguments(argv[2]); //{"wc", "-l", NULL} // {"/bin/wc", NULL}
-    path = ft_cmd_exits(env, cmd[0], pid);
-    fd1 = open(argv[1], O_RDONLY);
-    close (pipefd[0]);
-    if (fd1 == -1 || !path || dup2(fd1, 0) == -1 || dup2(pipefd[1], 1) == -1)
+    cmd = set_cmd_arguments(argv[cmd_index]); //{"wc", "-l", NULL}
+    path = ft_cmd_exits(env, cmd[0]);
+    if (!path)
     {
-        if (path)
-            free(path);
-        close(fd1);
         free_array(cmd);
-        perror("zsh");
-        exit(0);
+        return (ft_error("Error in path of child\n"));
     }
+    fd1 = open(argv[1], O_RDONLY);
+    if (fd1 == -1)
+        return (ft_error("Error in opening file1\n"));
+    if (dup2(fd1, 0) == -1)
+        perror("Error in dup()-ing fd1\n");
+    if (dup2(pipefd[1], 1) == -1)
+        perror("Error in dup()-ing pipefd[1] for file-1\n");
+    close (pipefd[0]);
     close(pipefd[1]);
     close(fd1);
     execve(path, cmd, env);
-    free(path);
-    free_array(cmd);
     perror("Error in exceve()-ing in child_process\n");
     return (0);
 }
 
-static int parent_process(int *pipefd, char **argv, char **env, int pid)
+static int parent_process(int *pipefd, char **argv, char **env)
 {
     int fd2;
     char **cmd;
     char *path;
 
     cmd = set_cmd_arguments(argv[3]);
-    path = ft_cmd_exits(env, cmd[0], pid);
-    close(pipefd[1]);
-    fd2 = open(argv[4], O_CREAT | O_WRONLY | O_TRUNC, 0644);
-    if (!path || fd2 == -1 || dup2(pipefd[0], 0) == -1 || dup2(fd2, 1) == -1)
+    path = ft_cmd_exits(env, cmd[0]);
+    if (!path)
     {
-        if (path)
-            free(path);
-        close(fd2);
-        close (pipefd[0]);
         free_array(cmd);
-        perror("Error in cmd_parent\n");
-        exit(127);
+        return (ft_error("Error in path of parent\n"));
     }
+    fd2 = open(argv[4], O_CREAT | O_WRONLY | O_TRUNC, 0644);
+        if (fd2 == -1)
+            return (ft_error("Error in opening file2\n"));
+    if (dup2(pipefd[0], 0) == -1)
+        perror("Error in dup()-ing pipefd[0] for file-2\n");
+    if (dup2(fd2, 1) == -1)
+        perror("Error in dup()-ing fd2\n");
+    close(pipefd[1]);
     close (pipefd[0]);
     close(fd2);
     execve(path, cmd, env);
-    free(path);
-    free_array(cmd);
     perror("Error in exceve()-ing in parent_process\n");
     return (0);
 }
@@ -161,12 +150,10 @@ int main(int argc, char *argv[], char *env[])
         if (pid == -1)
             perror("Error in fork()-ing\n");
         if (pid == 0)
-            child_process(pipefd, argv, env, pid);
-        else
-        {
-            wait(NULL);
-            parent_process(pipefd, argv, env, pid);
-        }
+            if (child_process(pipefd, argv, env, 2) == 1)
+                exit(1);
+        if (parent_process(pipefd, argv, env) == 1)
+            exit(1);
     }
     return (0);
 }
