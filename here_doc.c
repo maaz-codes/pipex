@@ -1,6 +1,8 @@
 #include "get_next_line/get_next_line.h"
 #include "pipex.h"
 
+// ./pipex here_doc LIMITER cmd1 cmd2 outfile
+
 int ft_here_doc(char *limiter, int *pipefd, char **argv, char **env)
 {
 	char	*line;
@@ -27,7 +29,9 @@ int ft_here_doc(char *limiter, int *pipefd, char **argv, char **env)
     free(new_limiter);
     free(line);
     execve(path, cmd, env); //cmd1
-    return (0);
+    free(path);
+    free(cmd);
+    return (1);
 }
 
     // if (fd1 == -1 || !path || dup2(fd1, 0) == -1 || dup2(pipefd[1], 1) == -1)
