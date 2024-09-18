@@ -48,3 +48,5 @@ Expected Output: output.txt should contain the number of words in largefile.txt.
 
 --your--own--
 1. create a executable file that returns NULL or break on purpose and then check wether it is freeing everything properly or not.
+
+2. ./pipex infile "cat" "./a.out" outfile

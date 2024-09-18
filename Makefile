@@ -2,6 +2,10 @@ NAME = pipex
 
 SRC = 	pipex.c \
 		libft.c  ft_split.c \
+		errors.c \
+		paths.c \
+		get_next_line/get_next_line.c get_next_line/get_next_line_utils.c \
+		here_doc.c \
 
 OBJ = $(SRC:.c=.o)
 

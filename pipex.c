@@ -2,95 +2,6 @@
 
 // file1.txt -content> cmd1 -output> cmd2 -output> file2.txt
 
-static void free_array(char **array)
-{
-    int i;
-
-    i = 0;
-    while (array[i])
-    {
-        free(array[i]);
-        i++;
-    }
-    free(array);
-}
-
-static int ft_error(char *error_msg)
-{
-    perror(error_msg);
-    return (1);
-}
-
-static char **set_cmd_arguments(char *cmd)
-{
-    char **cmd_args;
-
-    cmd_args = ft_split(cmd, ' ');
-    if (!cmd_args)
-        perror("split fails\n");
-    return (cmd_args);
-}
-
-static char **extract_path_env(char **env)
-{
-    int i;
-    char *path;
-    char **absoulute_paths;
-
-    i = 0;
-    while (env[i])
-    {
-        if (ft_strncmp(env[i], "PATH=", 5) == 0)
-        {
-            path = ft_strdup(env[i] + 5);
-            break ;
-        }
-        i++;
-    }
-    absoulute_paths = ft_split(path, ':');
-    free(path);
-    return (absoulute_paths);
-}
-
-static char *set_own_path(char *cmd)
-{
-    int i;
-
-    i = 0;
-    if (cmd[0] == '/')
-        return (cmd);
-    return (NULL);
-}
-
-static char *ft_cmd_exits(char **env, char *cmd, int pid)
-{
-    char **a_paths;
-    char *temp_str_join;
-    char *path;
-    int i;
-
-    i = 0;
-    path = NULL;
-    if (!cmd || set_own_path(cmd))
-        return (cmd); // ft_split fails
-    a_paths = extract_path_env(env);
-    while (a_paths[i])
-    {
-        temp_str_join = ft_strjoin(a_paths[i], "/");
-        free(a_paths[i]);
-        a_paths[i] = ft_strjoin(temp_str_join, cmd);
-        free(temp_str_join);
-        if (access(a_paths[i], F_OK) == 0 && access(a_paths[i], X_OK) == 0)
-        {
-                path = ft_strdup(a_paths[i]);
-                break ;
-        }
-        i++;
-    }
-    free_array(a_paths);
-    return (path);
-}
-
 static int child_process(int *pipefd, char **argv, char **env, int pid)
 {
     int fd1;
@@ -98,7 +9,7 @@ static int child_process(int *pipefd, char **argv, char **env, int pid)
     char *path;
 
     cmd = set_cmd_arguments(argv[2]); //{"wc", "-l", NULL} // {"/bin/wc", NULL}
-    path = ft_cmd_exits(env, cmd[0], pid);
+    path = ft_cmd_exits(env, cmd[0]);
     fd1 = open(argv[1], O_RDONLY);
     close (pipefd[0]);
     if (fd1 == -1 || !path || dup2(fd1, 0) == -1 || dup2(pipefd[1], 1) == -1)
@@ -125,10 +36,13 @@ static int parent_process(int *pipefd, char **argv, char **env, int pid)
     char **cmd;
     char *path;
 
-    cmd = set_cmd_arguments(argv[3]);
-    path = ft_cmd_exits(env, cmd[0], pid);
+    if (!ft_strncmp(argv[1], "here_doc", 9)) 
+        cmd = set_cmd_arguments(argv[4]);
+    else
+        cmd = set_cmd_arguments(argv[3]);
+    path = ft_cmd_exits(env, cmd[0]);
     close(pipefd[1]);
-    fd2 = open(argv[4], O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    fd2 = open(argv[5], O_CREAT | O_WRONLY | O_TRUNC, 0644);
     if (!path || fd2 == -1 || dup2(pipefd[0], 0) == -1 || dup2(fd2, 1) == -1)
     {
         if (path)
@@ -148,25 +62,57 @@ static int parent_process(int *pipefd, char **argv, char **env, int pid)
     return (0);
 }
 
+int *get_std_fds(int flag, int *std_fds)
+{
+    int *fds;
+
+    if (flag == 0)
+    {
+        fds = malloc(sizeof(int *) * 2);
+        if (!fds)
+            return (NULL);
+        fds[0] = dup(0);
+        fds[1] = dup(1);
+        return (fds);
+    }
+    else    
+    {
+        dup2(0, std_fds[0]);
+        dup2(1, std_fds[1]);
+    }
+    return (fds);
+}
+
 int main(int argc, char *argv[], char *env[])
 {
     int pipefd[2];
     int pid;
+    int *std_fds;
 
-    if (argc == 5)
-    {
+    // if (argc == 5)
+    // {
+        std_fds = get_std_fds(0, pipefd); //returns NULL if fails
         if (pipe(pipefd) == -1)
             return (ft_error("Error in pipe()-ing\n"));
         pid = fork();
         if (pid == -1)
             perror("Error in fork()-ing\n");
         if (pid == 0)
-            child_process(pipefd, argv, env, pid);
+        {
+            if (!ft_strncmp(argv[1], "here_doc", 8))
+            {
+                ft_here_doc(argv[2], pipefd, argv, env);
+                get_std_fds(1, std_fds);
+                free(std_fds);
+            }
+            else
+                child_process(pipefd, argv, env, pid);
+        }
         else
         {
             wait(NULL);
             parent_process(pipefd, argv, env, pid);
         }
-    }
+    // }
     return (0);
 }
