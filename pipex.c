@@ -79,25 +79,28 @@ static int last_process(t_pipex *pipex, char **argv, char **env, int argc)
     int fd2;
     char **cmd;
     char *path;
+    int *lastpipe = pipex->pipefd[pipex->process_count - 2];
 
     printf("Last-process\n");
     cmd = set_cmd_arguments(argv[argc - 2]);
     path = ft_cmd_exits(env, cmd[0]);
-    close(pipex->pipefd[pipex->pipe_index][1]); // write_end
+    close(lastpipe[1]); // write_end
     fd2 = open(argv[argc - 1], O_CREAT | O_WRONLY | O_TRUNC, 0644);
-    if (!path || fd2 == -1 || dup2(pipex->pipefd[pipex->pipe_index][0], 0) == -1 || dup2(fd2, 1) == -1)
+    if (!path || fd2 == -1 || dup2(lastpipe[0], 0) == -1 || dup2(fd2, 1) == -1)
     {
         if (path)
             free(path);
         close(fd2);
-        close (pipex->pipefd[pipex->pipe_index][0]);
+        close (lastpipe[0]);
         free_array(cmd);
         perror("Error in cmd_parent\n");
         exit(127);
     }
-    close (pipex->pipefd[pipex->pipe_index][0]); // read_end
+    close (lastpipe[0]); // read_end
     close(fd2);
     free_pipes(pipex->pipefd);
+    write(2, "run\n", 4);
+    // printf("path = %s | cmd = %s\n", path, cmd[0]);
     execve(path, cmd, env);
     free(path);
     free_array(cmd);
@@ -105,32 +108,27 @@ static int last_process(t_pipex *pipex, char **argv, char **env, int argc)
     return (0);
 }
 
-// void ft_ft_here_doc()
-// {
-//     printf("here_doc\n");
-// }
-
-void middle_process(t_pipex **pipex, char **argv, char **env, int argc)
+void middle_process(t_pipex *pipex, char **argv, char **env, int argc)
 {
     char **cmd;
     char *path;
-    int *pipe1 = (*pipex)->pipefd[(*pipex)->pipe_index];
-    int *pipe2 = (*pipex)->pipefd[(*pipex)->pipe_index + 1];
+    int *pipe1 = (pipex)->pipefd[(pipex)->pipe_index];
+    int *pipe2 = (pipex)->pipefd[(pipex)->pipe_index + 1];
 
-    cmd = set_cmd_arguments(argv[(*pipex)->cmd_index]); //cmd2
-    printf("cmd = %s\n", cmd[0]);
-    path = ft_cmd_exits(env, cmd[0]); 
-    close(pipe1[1]); 
+    cmd = set_cmd_arguments(argv[(pipex)->cmd_index]); //cmd2
+    path = ft_cmd_exits(env, cmd[0]);
+    close(pipe1[1]);
     close(pipe2[0]);
-
-    dup2(pipe1[0], 0);
-    char *buff = malloc(11);
-    read(0, &buff, 10);
-    dup2(pipe2[1], 1);
-    
+    if (!path)
+        perror("path:middle_process: "); 
+    if (dup2(pipe1[0], 0) == -1)
+        perror("dup2:pipe1: ");
+    if (dup2(pipe2[1], 1) == -1)
+        perror("dup2:pipe2: ");    
+    printf("Middle-process\n");
     close(pipe1[0]);
     close(pipe2[1]);
-    (*pipex)->pipe_index += 1; // moving to next pipe
+    // pipex->pipe_index += 1; // moving to next pipe
     write(2, "cmd2\n", 5);
     execve(path, cmd, env); 
     free(path);
@@ -144,24 +142,25 @@ void pipeline(t_pipex *pipex, char **argv, char **env, int argc, int *std_fds)
     int pid;
 
     i = 0;
-    while (i < (pipex)->process_count - 2)
+    while (i < pipex->process_count - 2)
     {
         pid = fork();
         if (pid == -1)
             perror("Error in fork()-ing\n");
         if (pid == 0) // 
         {
-            printf("cmd_index = %d\n", pipex->cmd_index);
+            // printf("cmd_index = %d\n", pipex->cmd_index);
             pipex->cmd_index = pipex->cmd_index + 1;
             // pipex->pipe_index += 1; 
             printf("cmd_index after = %d\n", pipex->cmd_index);
-            printf("Middle-process\n");
+            // printf("Middle-process\n");
             get_std_fds(1, std_fds);
-            middle_process(&pipex, argv, env, argc);
+            middle_process(pipex, argv, env, argc);
+            exit(0);
         }
         else
         {
-            wait(NULL);
+            pipex->pipe_index += 1;
         }
         i++;
     }
@@ -174,15 +173,18 @@ int **get_pipeline(t_pipex *pipex)
     int i;
 
     i = 0;
-    pipeline = malloc(sizeof(int **) * pipex->process_count);
+    pipeline = malloc(sizeof(int *) * pipex->process_count);
     while (i < pipex->process_count - 1)
     {
-        pipefd = malloc(sizeof(int *) * 2);
+        pipefd = malloc(sizeof(int) * 2);
         if (!pipefd)
             perror("Error in pipe-malloc()-ing\n");
         pipeline[i] = pipefd;
         if (pipe(pipeline[i]) == -1)
+        {
             perror("Error in pipe()-ing\n");
+            exit(1);
+        }
         i++;
     }
     printf("Total pipes created = %d | Total process created = %d\n", i, pipex->process_count);
@@ -209,13 +211,13 @@ int main(int argc, char *argv[], char *env[])
     pipex.process_count = 0;
     pipex.pipe_index = 0;
 
-    if (!strncmp(argv[1], "here_doc", 9))
-        pipex.cmd_index = 3;
-    else
-        pipex.cmd_index = 2;
-
+    // ./pipex infile cmd1 cmd2 cmd3 outfile
     if (argc >= 5)
     {   
+        if (!strncmp(argv[1], "here_doc", 9))
+            pipex.cmd_index = 3;
+        else
+            pipex.cmd_index = 2;
         pipex.process_count = count_cmds(argv, argc);
         pipex.pipefd = get_pipeline(&pipex);
         std_fds = get_std_fds(0, pipex.pipefd[0]); //returns NULL if fails
@@ -245,6 +247,7 @@ int main(int argc, char *argv[], char *env[])
                 printf("Entering Pipeline...\n");
                 get_std_fds(1, std_fds);
                 pipex.pipe_index += 1;
+                printf("cmd_index = %d\n", pipex.cmd_index);
                 pipeline(&pipex, argv, env, argc, std_fds);
             }
             wait(NULL);
