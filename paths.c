@@ -6,7 +6,7 @@ char **set_cmd_arguments(char *cmd)
 
     cmd_args = ft_split(cmd, ' ');
     if (!cmd_args)
-        perror("split fails\n");
+        return (NULL);
     return (cmd_args);
 }
 

@@ -6,6 +6,17 @@ void print_error()
     exit(EXIT_FAILURE);
 }
 
+int count_cmds(char *argv[], int argc)
+{
+    int count;
+
+    if (!ft_strncmp(argv[1], "here_doc", 9))
+        count = argc - 4;
+    else    
+        count = argc - 3;
+    return (count);
+}
+
 static void execute(char **cmd, char *env[], int read_from, int write_to)
 {
     char *path;
@@ -19,6 +30,11 @@ static void execute(char **cmd, char *env[], int read_from, int write_to)
     close(write_to);
     execve(path, cmd, env);
     free_array(cmd), free(path);
+}
+
+static void here_doc_process(char *limiter, int *pipefd, int argv)
+{
+    ft_here_doc(limiter, pipefd, argv, argv);
 }
 
 static void first_process(int argc, char **argv, char **env, int *pipefd)
@@ -63,16 +79,19 @@ static void last_process(int argc, char **argv, char **env, int *pipefd)
         execute(cmd, env, pipefd[0], out_file);
 }
 
-int count_cmds(char *argv[], int argc)
+static void middle_process(char **argv, char **env, int argc, int **pipefd)
 {
-    int count;
+    write(2, "middle_process\n", 15);
+    int i;
 
-    if (!ft_strncmp(argv[1], "here_doc", 9))
-        count = argc - 4;
-    else    
-        count = argc - 3;
-    return (count);
+    i = 0;
+    while (++i <= count_cmds(argv, argc) - 2)
+    {
+        
+    }
+    exit(0);
 }
+
 
 int main(int argc, char *argv[], char *env[])
 {
@@ -85,7 +104,11 @@ int main(int argc, char *argv[], char *env[])
     {
         if (pipe(pipefd) == -1)
             (print_error());
-        first_process(argc, argv, env, pipefd);
+        if (ft_strncmp(argv[1], "here_doc", 9))
+            here_doc_process(argv[3], pipefd, argv);
+        else
+            first_process(argc, argv, env, pipefd);
+        middle_process(argc, argv, env, pipefd);
         last_process(argc, argv, env, pipefd);
         waitpid(pid, &status, 0);
         write(2, "parent_process\n", 16);
