@@ -1,8 +1,7 @@
 #include <unistd.h>
 
-int main()
+int main(void)
 {
-    write(1, "stdout\n", 7);
-    write(2, "stderr\n", 7);
-    return (0);
+	write(1, "hello_stdout\n", 13);
+       	write(2, "hello_stderr\n", 13);	
 }

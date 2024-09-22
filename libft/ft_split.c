@@ -1,4 +1,4 @@
-#include "pipex.h"
+#include "../pipex.h"
 
 static char	**malloc_free(char **array, int position)
 {

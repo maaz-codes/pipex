@@ -17,6 +17,7 @@ char **extract_path_env(char **env)
     char **absoulute_paths;
 
     i = 0;
+    path = NULL;
     while (env[i])
     {
         if (ft_strncmp(env[i], "PATH=", 5) == 0)
@@ -27,7 +28,8 @@ char **extract_path_env(char **env)
         i++;
     }
     absoulute_paths = ft_split(path, ':');
-    free(path);
+    if (!path)
+        free(path);
     return (absoulute_paths);
 }
 
@@ -36,7 +38,7 @@ char *set_own_path(char *cmd)
     int i;
 
     i = 0;
-    if (cmd[0] == '/')
+    if (ft_strchr(cmd, '/'))
         return (cmd);
     return (NULL);
 }
@@ -51,7 +53,7 @@ char *ft_cmd_exits(char **env, char *cmd)
     i = 0;
     path = NULL;
     if (!cmd || set_own_path(cmd))
-        return (cmd); // ft_split fails
+        return (ft_strdup(cmd)); // ft_split fails
     a_paths = extract_path_env(env);
     while (a_paths[i])
     {

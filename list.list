@@ -1,0 +1,4 @@
+env -i /bin/valgrind --leak-check=full --leak-resolution=high -s --trace-children=yes --track-fds=yes --track-origins=yes --show-leak-kinds=all ./pipex Makefile cat cat noenv
+
+garbage=$(cat /dev/urandom | head -10)
+/bin/valgrind --leak-check=full --leak-resolution=high -s --trace-children=yes --track-fds=yes --track-origins=yes --show-leak-kinds=all ./pipex Makefile "$age" "$garbage" get_next_line/test

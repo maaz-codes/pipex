@@ -5,7 +5,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <sys/wait.h>
+#include <string.h>
 
 #define BUFFER_SIZE 5
 
@@ -23,12 +25,17 @@ char **extract_path_env(char **env);
 char *set_own_path(char *cmd);
 char *ft_cmd_exits(char **env, char *cmd);
 
+// processes
+void execute(char **cmd, char *env[], int read_from, int write_to);
+pid_t first_process(int argc, char **argv, char **env, int *pipefd);
+pid_t last_process(int argc, char **argv, char **env, int *pipefd);
+
 // errors
-int ft_error(char *error_msg);
+void print_error(char *msg);
 void free_array(char **array);
 
 // here_doc
-int ft_here_doc(char *limiter, int *pipefd, char **argv, char **env);
+int ft_here_doc(char *limiter, char **argv, char **env, int *pipefd);
 
 
 #endif

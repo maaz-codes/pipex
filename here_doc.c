@@ -3,50 +3,44 @@
 
 // ./pipex here_doc LIMITER cmd1 cmd2 outfile
 
-int ft_here_doc(char *limiter, int *pipefd, char **argv, char **env)
+static void read_write(char *limiter, int write_to)
 {
-	char	*line;
-    int     len;
-    char    *new_limiter;
-    
-    char **cmd = set_cmd_arguments(argv[2]); // {"wc", "-l", NULL}
-    char *path = ft_cmd_exits(env, cmd[0]); // {"/usr/bin/wc"}
-    len = ft_strlen(limiter) + 1;
+    char *new_limiter;
+    char *line;
+
     new_limiter = ft_strjoin(limiter, "\n");
     line = get_next_line(0);
     while (line)
     {
-        if (!ft_strncmp(line, new_limiter, len))
-            return (0);
-        write(pipefd[1], line, ft_strlen(line));
+        if (!ft_strncmp(line, new_limiter, ft_strlen(new_limiter)))
+            break ;
+        write(write_to, line, ft_strlen(line));
         free(line);
         line = get_next_line(0);
     }
-    dup2(pipefd[0], 0);
-    dup2(pipefd[1], 1);
-    close(pipefd[0]);
-    close(pipefd[1]);
     free(new_limiter);
-    free(line);
-    execve(path, cmd, env); //cmd1
-    free(path);
-    free(cmd);
-    return (1);
+    close(write_to);
 }
 
-    // if (fd1 == -1 || !path || dup2(fd1, 0) == -1 || dup2(pipefd[1], 1) == -1)
-    // {
-    //     if (path)
-    //         free(path);
-    //     close(fd1);
-    //     free_array(cmd);
-    //     perror("zsh");
-    //     exit(0);
-    // }
-    // close(pipefd[1]);
-    // close(fd1);
-    // execve(path, cmd, env);
-    // free(path);
-    // free_array(cmd);
-    // perror("Error in exceve()-ing in child_process\n");
-    // return (0);
+int ft_here_doc(char *limiter, char **argv, char **env, int *pipefd)
+{
+	pid_t pid;
+    char **cmd;
+    char *path;
+    int doc_pipe[2];
+
+    pipe(doc_pipe);
+    read_write(limiter, doc_pipe[1]);
+    cmd = set_cmd_arguments(argv[3]);
+    if (!cmd)
+        (close(pipefd[0]), close(pipefd[1]), print_error("cmd-here_doc"));
+    pid = fork();
+    if (pid == -1)
+        (close(pipefd[0]), close(pipefd[1]), print_error("fork(here_doc)"));
+    if (pid == 0)
+    {
+        execute(cmd, env, doc_pipe[0], pipefd[1]);
+        
+    }
+    return (pid);
+}

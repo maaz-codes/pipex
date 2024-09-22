@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "pipiex-v7": "c"
+        "pipiex-v7": "c",
+        "pipex.h": "c",
+        "errno.h": "c"
     }
 }
