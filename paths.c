@@ -18,6 +18,8 @@ char **extract_path_env(char **env)
 
     i = 0;
     path = NULL;
+    if (!env)
+        return (NULL);
     while (env[i])
     {
         if (ft_strncmp(env[i], "PATH=", 5) == 0)
@@ -52,9 +54,9 @@ char *ft_cmd_exits(char **env, char *cmd)
 
     i = 0;
     path = NULL;
-    if (!cmd || set_own_path(cmd))
-        return (ft_strdup(cmd)); // ft_split fails
     a_paths = extract_path_env(env);
+    if (!cmd || set_own_path(cmd) || !a_paths)
+        return (ft_strdup(cmd));
     while (a_paths[i])
     {
         temp_str_join = ft_strjoin(a_paths[i], "/");

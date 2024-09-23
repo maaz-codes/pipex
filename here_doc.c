@@ -31,16 +31,15 @@ int ft_here_doc(char *limiter, char **argv, char **env, int *pipefd)
 
     pipe(doc_pipe);
     read_write(limiter, doc_pipe[1]);
-    cmd = set_cmd_arguments(argv[3]);
-    if (!cmd)
-        (close(pipefd[0]), close(pipefd[1]), print_error("cmd-here_doc"));
     pid = fork();
     if (pid == -1)
         (close(pipefd[0]), close(pipefd[1]), print_error("fork(here_doc)"));
     if (pid == 0)
     {
+        cmd = set_cmd_arguments(argv[3]);
+        if (!cmd)
+            (close(pipefd[0]), close(pipefd[1]), print_error("cmd-here_doc"));
         execute(cmd, env, doc_pipe[0], pipefd[1]);
-        
     }
     return (pid);
 }

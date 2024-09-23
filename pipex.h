@@ -28,6 +28,7 @@ char *ft_cmd_exits(char **env, char *cmd);
 // processes
 void execute(char **cmd, char *env[], int read_from, int write_to);
 pid_t first_process(int argc, char **argv, char **env, int *pipefd);
+pid_t middle_process(int index, char **argv, char **env, int *pipefd, int *mid_pipe);
 pid_t last_process(int argc, char **argv, char **env, int *pipefd);
 
 // errors
