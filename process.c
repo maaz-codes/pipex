@@ -66,7 +66,7 @@ pid_t last_process(int argc, char **argv, char **env, int *pipefd)
     return (pid);
 }
 
-pid_t middle_process(int index, char **argv, char **env, int *pipefd, int *mid_pipe)
+pid_t middle_process(char *argv_cmd, char **env, int read_from, int *pipefd)
 {
     write(2, "middle_process\n", 15);
     pid_t pid;
@@ -74,13 +74,13 @@ pid_t middle_process(int index, char **argv, char **env, int *pipefd, int *mid_p
 
     pid = fork();
     if (pid == -1)
-        (close(pipefd[0]), close(pipefd[1]), print_error("fork(middle_process)"));
+        (close(read_from), close(pipefd[0]), close(pipefd[1]), print_error("fork(middle_process)"));
     if (pid == 0)
     {
-        cmd = set_cmd_arguments(argv[index]);
+        cmd = set_cmd_arguments(argv_cmd);
         if (!cmd)
-            (close(pipefd[0]), close(pipefd[1]), print_error("cmd_middle"));
-        execute(cmd, env, pipefd[0], mid_pipe[1]);
+            (close(read_from), close(pipefd[0]), close(pipefd[1]), print_error("cmd_middle"));
+        execute(cmd, env, read_from, pipefd[1]);
     }
     return (pid);
 }
