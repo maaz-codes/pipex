@@ -6,7 +6,7 @@
 /*   By: maakhan <maakhan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/07 23:22:30 by maakhan           #+#    #+#             */
-/*   Updated: 2024/09/17 15:29:47 by maakhan          ###   ########.fr       */
+/*   Updated: 2024/09/24 19:28:54 by maakhan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@
 #  define BUFFER_SIZE 5
 # endif
 
-// int		ft_strlen(const char *str);
 char	*ft_strchr_gnl(const char *s, int c);
 char	*ft_strdup_gnl(const char *s1);
 char	*ft_strjoin_gnl(char const *s1, char const *s2);

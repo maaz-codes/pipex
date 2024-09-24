@@ -1,26 +1,36 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   errors.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: maakhan <maakhan@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/09/24 18:52:25 by maakhan           #+#    #+#             */
+/*   Updated: 2024/09/24 18:52:57 by maakhan          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "pipex.h"
 
-void print_error(char *msg)
+void	print_error(void)
 {
-    perror("perror");
-    printf("In: %s\n", msg);
-    printf("errno: %d = %s\n", errno, strerror(errno));
-    if (errno == ENOENT)
-        exit(127);
-    exit(1);
+	perror("Error");
+	if (errno == ENOENT)
+		exit(127);
+	exit(1);
 }
 
-void free_array(char **array)
+void	free_array(char **array)
 {
-    int i;
+	int	i;
 
-    i = 0;
-    if (!array)
-        return ;
-    while (array[i])
-    {
-        free(array[i]);
-        i++;
-    }
-    free(array);
+	i = 0;
+	if (!array)
+		return ;
+	while (array[i])
+	{
+		free(array[i]);
+		i++;
+	}
+	free(array);
 }

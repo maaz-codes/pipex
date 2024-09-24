@@ -6,16 +6,16 @@
 /*   By: maakhan <maakhan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/07 23:22:00 by maakhan           #+#    #+#             */
-/*   Updated: 2024/09/17 15:29:41 by maakhan          ###   ########.fr       */
+/*   Updated: 2024/09/24 19:27:16 by maakhan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
 #include "../pipex.h"
+#include "get_next_line.h"
 
 char	*ft_strchr_gnl(const char *s, int c)
 {
-	int	i;
+	size_t	i;
 
 	i = 0;
 	if (!s)

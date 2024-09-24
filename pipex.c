@@ -1,40 +1,37 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   pipex.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: maakhan <maakhan@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/09/24 18:49:23 by maakhan           #+#    #+#             */
+/*   Updated: 2024/09/24 19:24:19 by maakhan          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "pipex.h"
 
-static int count_cmds(char *argv[], int argc)
+int	main(int argc, char *argv[], char *env[])
 {
-    int count;
+	pid_t	pid_last;
+	pid_t	pid_first;
+	int		pipefd[2];
+	int		status;
 
-    if (!ft_strncmp(argv[1], "here_doc", 9))
-        count = argc - 4;
-    else    
-        count = argc - 3;
-    return (count);
-}
-
-int main(int argc, char *argv[], char *env[])
-{
-    int i;
-    pid_t pid_last;
-    pid_t pid_first;
-    int pipefd[2];
-    int status;
-
-    if (argc == 5)
-    {
-        if (pipe(pipefd) == -1)
-            (print_error("pipe()"));
-        pid_first = first_process(argc, argv, env, pipefd);
-        pid_last = last_process(argc, argv, env, pipefd);
-        close(pipefd[0]);
-        close(pipefd[1]);
-        waitpid(pid_first, &status, 0);
-        waitpid(pid_last, &status, 0);
-        printf("status: %d\n", status);
-        if (WIFEXITED(status))
-            return (WEXITSTATUS(status));
-        else if (WIFSIGNALED(status))
-            return (WTERMSIG(status));
-        return (EXIT_SUCCESS);
-    }
-    return (1);
+	if (argc == 5)
+	{
+		if (pipe(pipefd) == -1)
+			(print_error());
+		pid_first = first_process(argv, env, pipefd);
+		pid_last = last_process(argc, argv, env, pipefd);
+		waitpid(pid_first, &status, 0);
+		waitpid(pid_last, &status, 0);
+		if (WIFEXITED(status))
+			return (WEXITSTATUS(status));
+		else if (WIFSIGNALED(status))
+			return (WTERMSIG(status));
+		return (EXIT_SUCCESS);
+	}
+	return (1);
 }
