@@ -6,7 +6,7 @@
 /*   By: maakhan <maakhan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 19:25:17 by maakhan           #+#    #+#             */
-/*   Updated: 2024/09/24 19:25:18 by maakhan          ###   ########.fr       */
+/*   Updated: 2024/09/24 20:50:43 by maakhan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,8 @@ char	**ft_split(const char *s, char c)
 	char	**ptr;
 
 	if (!s)
+		return (NULL);
+	else if (s[0] == '\0')
 		return (NULL);
 	ptr = get_array(s, c, 0, 0);
 	return (ptr);

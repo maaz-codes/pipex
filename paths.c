@@ -6,7 +6,7 @@
 /*   By: maakhan <maakhan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 18:50:20 by maakhan           #+#    #+#             */
-/*   Updated: 2024/09/24 19:24:43 by maakhan          ###   ########.fr       */
+/*   Updated: 2024/09/24 21:02:15 by maakhan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,11 @@ char	**set_cmd_arguments(char *cmd)
 	cmd_args = ft_split(cmd, ' ');
 	if (!cmd_args)
 		return (NULL);
+	else if (!cmd_args[0])
+	{
+		free_array(cmd_args);
+		return (NULL);
+	}
 	return (cmd_args);
 }
 
