@@ -6,7 +6,7 @@
 /*   By: maakhan <maakhan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 18:52:06 by maakhan           #+#    #+#             */
-/*   Updated: 2024/09/24 19:26:29 by maakhan          ###   ########.fr       */
+/*   Updated: 2024/09/24 21:58:26 by maakhan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ static void	read_write(char *limiter, int write_to)
 		line = get_next_line(0);
 	}
 	free(new_limiter);
+	free(line);
 	close(write_to);
 }
 
@@ -38,18 +39,22 @@ int	ft_here_doc(char *limiter, char **argv, char **env, int *pipefd)
 	char	**cmd;
 	int		doc_pipe[2];
 
-	pipe(doc_pipe);
+	if (pipe(doc_pipe) == -1)
+		(close(pipefd[0]), close(pipefd[1]), print_error());
 	write(1, "<here_doc/>\n", 12);
 	read_write(limiter, doc_pipe[1]);
 	pid = fork();
 	if (pid == -1)
-		(close(pipefd[0]), close(pipefd[1]), print_error());
+		(close(doc_pipe[0]), close(pipefd[0]), close(pipefd[1]), print_error());
 	if (pid == 0)
 	{
+		close(pipefd[0]);
 		cmd = set_cmd_arguments(argv[3]);
 		if (!cmd)
-			(close(pipefd[0]), close(pipefd[1]), print_error());
+			(close(doc_pipe[0]), close(pipefd[1]), write(2, "Error in cmd\n",
+					13), exit(127));
 		execute(cmd, env, doc_pipe[0], pipefd[1]);
 	}
+	close(doc_pipe[0]);
 	return (pid);
 }
