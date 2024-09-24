@@ -6,7 +6,7 @@
 /*   By: maakhan <maakhan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 18:41:10 by maakhan           #+#    #+#             */
-/*   Updated: 2024/09/24 19:23:48 by maakhan          ###   ########.fr       */
+/*   Updated: 2024/09/24 21:39:34 by maakhan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,13 +38,14 @@ pid_t	first_process(char **argv, char **env, int *pipefd)
 		(close(pipefd[0]), close(pipefd[1]), print_error());
 	if (pid == 0)
 	{
+		close(pipefd[0]);
 		in_file = open(argv[1], O_RDONLY);
 		if (in_file == -1)
-			(close(pipefd[0]), close(pipefd[1]), print_error());
+			(close(pipefd[1]), print_error());
 		cmd = set_cmd_arguments(argv[2]);
 		if (!cmd)
-			(close(pipefd[0]), close(pipefd[1]), print_error());
-		close(pipefd[0]);
+			(close(in_file), close(pipefd[1]), write(2, "Error in cmd\n", 13),
+				exit(127));
 		execute(cmd, env, in_file, pipefd[1]);
 	}
 	return (pid);
@@ -61,13 +62,14 @@ pid_t	last_process(int argc, char **argv, char **env, int *pipefd)
 		(close(pipefd[0]), close(pipefd[1]), print_error());
 	if (pid == 0)
 	{
+		close(pipefd[1]);
 		out_file = open(argv[argc - 1], O_CREAT | O_WRONLY | O_TRUNC, 0644);
 		if (out_file == -1)
-			(close(pipefd[0]), close(pipefd[1]), print_error());
+			(close(pipefd[0]), print_error());
 		cmd = set_cmd_arguments(argv[argc - 2]);
 		if (!cmd)
-			(close(pipefd[0]), close(pipefd[1]), print_error());
-		close(pipefd[1]);
+			(close(out_file), close(pipefd[0]), write(2, "Error in cmd\n", 13),
+				exit(127));
 		execute(cmd, env, pipefd[0], out_file);
 	}
 	close(pipefd[0]);
@@ -82,13 +84,14 @@ pid_t	middle_process(char *argv_cmd, char **env, int read_from, int *pipefd)
 
 	pid = fork();
 	if (pid == -1)
-		(close(read_from), close(pipefd[1]), print_error());
+		(close(read_from), close(pipefd[0]), close(pipefd[1]), print_error());
 	if (pid == 0)
 	{
 		close(pipefd[0]);
 		cmd = set_cmd_arguments(argv_cmd);
 		if (!cmd)
-			(close(read_from), close(pipefd[1]), print_error());
+			(close(read_from), close(pipefd[0]), close(pipefd[1]), write(2,
+					"Error in cmd\n", 13), exit(127));
 		execute(cmd, env, read_from, pipefd[1]);
 	}
 	return (pid);
@@ -111,4 +114,5 @@ void	pipeline(int argc, char **argv, char **env, int *pipefd)
 		read_from = dup(pipefd[0]);
 		process_count--;
 	}
+	close(read_from);
 }

@@ -6,7 +6,7 @@
 /*   By: maakhan <maakhan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 18:50:09 by maakhan           #+#    #+#             */
-/*   Updated: 2024/09/24 19:24:26 by maakhan          ###   ########.fr       */
+/*   Updated: 2024/09/24 22:16:01 by maakhan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,8 +41,8 @@ int	main(int argc, char *argv[], char *env[])
 			first_process(argv, env, pipefd);
 		pipeline(argc, argv, env, pipefd);
 		pid_last = last_process(argc, argv, env, pipefd);
-		waiting(argc, argv);
 		waitpid(pid_last, &status, 0);
+		waiting(argc, argv);
 		return (WEXITSTATUS(status));
 	}
 	return (EXIT_FAILURE);
