@@ -6,7 +6,7 @@
 /*   By: maakhan <maakhan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 18:52:25 by maakhan           #+#    #+#             */
-/*   Updated: 2024/09/24 21:16:58 by maakhan          ###   ########.fr       */
+/*   Updated: 2024/09/25 07:27:05 by maakhan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 void	print_error(void)
 {
 	perror("Error");
+	close(STDERR_FILENO);
 	if (errno == ENOENT)
 		exit(127);
 	exit(1);
@@ -33,4 +34,10 @@ void	free_array(char **array)
 		i++;
 	}
 	free(array);
+}
+
+void	close_stds(void)
+{
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
 }

@@ -6,7 +6,7 @@
 /*   By: maakhan <maakhan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 18:41:10 by maakhan           #+#    #+#             */
-/*   Updated: 2024/09/24 21:39:34 by maakhan          ###   ########.fr       */
+/*   Updated: 2024/09/25 07:36:28 by maakhan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,14 @@ void	execute(char **cmd, char *env[], int read_from, int write_to)
 
 	path = ft_cmd_exits(env, cmd[0]);
 	if (!path)
-		(free_array(cmd), close(read_from), close(write_to), print_error());
+		(free_array(cmd), close(read_from), close(write_to), close_stds(),
+			print_error());
 	if (dup2(read_from, 0) < 0 || dup2(write_to, 1) < 0)
 		(free_array(cmd), free(path), close(read_from), close(write_to),
-			print_error());
+			close_stds(), print_error());
 	(close(read_from), close(write_to));
 	execve(path, cmd, env);
-	(free_array(cmd), free(path), print_error());
+	(free_array(cmd), free(path), close_stds(), print_error());
 }
 
 pid_t	first_process(char **argv, char **env, int *pipefd)
@@ -35,17 +36,17 @@ pid_t	first_process(char **argv, char **env, int *pipefd)
 
 	pid = fork();
 	if (pid == -1)
-		(close(pipefd[0]), close(pipefd[1]), print_error());
+		(close(pipefd[0]), close(pipefd[1]), close_stds(), print_error());
 	if (pid == 0)
 	{
 		close(pipefd[0]);
 		in_file = open(argv[1], O_RDONLY);
 		if (in_file == -1)
-			(close(pipefd[1]), print_error());
+			(close_stds(), close(pipefd[1]), print_error());
 		cmd = set_cmd_arguments(argv[2]);
 		if (!cmd)
 			(close(in_file), close(pipefd[1]), write(2, "Error in cmd\n", 13),
-				exit(127));
+				close_stds(), close(STDERR_FILENO), exit(127));
 		execute(cmd, env, in_file, pipefd[1]);
 	}
 	return (pid);
@@ -59,17 +60,17 @@ pid_t	last_process(int argc, char **argv, char **env, int *pipefd)
 
 	pid = fork();
 	if (pid == -1)
-		(close(pipefd[0]), close(pipefd[1]), print_error());
+		(close(pipefd[0]), close(pipefd[1]), close_stds(), print_error());
 	if (pid == 0)
 	{
 		close(pipefd[1]);
 		out_file = open(argv[argc - 1], O_CREAT | O_WRONLY | O_TRUNC, 0644);
 		if (out_file == -1)
-			(close(pipefd[0]), print_error());
+			(close(pipefd[0]), close_stds(), print_error());
 		cmd = set_cmd_arguments(argv[argc - 2]);
 		if (!cmd)
 			(close(out_file), close(pipefd[0]), write(2, "Error in cmd\n", 13),
-				exit(127));
+				close_stds(), close(STDERR_FILENO), exit(127));
 		execute(cmd, env, pipefd[0], out_file);
 	}
 	close(pipefd[0]);
@@ -84,14 +85,16 @@ pid_t	middle_process(char *argv_cmd, char **env, int read_from, int *pipefd)
 
 	pid = fork();
 	if (pid == -1)
-		(close(read_from), close(pipefd[0]), close(pipefd[1]), print_error());
+		(close(read_from), close(pipefd[0]), close(pipefd[1]), close_stds(),
+			print_error());
 	if (pid == 0)
 	{
 		close(pipefd[0]);
 		cmd = set_cmd_arguments(argv_cmd);
 		if (!cmd)
-			(close(read_from), close(pipefd[0]), close(pipefd[1]), write(2,
-					"Error in cmd\n", 13), exit(127));
+			(close(read_from), close(pipefd[0]), close(pipefd[1]), close_stds(),
+				write(2, "Error in cmd\n", 13), close(STDERR_FILENO),
+				exit(127));
 		execute(cmd, env, read_from, pipefd[1]);
 	}
 	return (pid);

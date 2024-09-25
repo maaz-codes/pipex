@@ -6,7 +6,7 @@
 /*   By: maakhan <maakhan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 18:49:01 by maakhan           #+#    #+#             */
-/*   Updated: 2024/09/24 19:24:01 by maakhan          ###   ########.fr       */
+/*   Updated: 2024/09/25 07:12:25 by maakhan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ pid_t	first_process(char **argv, char **env, int *pipefd);
 pid_t	middle_process(char *argv_cmd, char **env, int read_from, int *pipefd);
 pid_t	last_process(int argc, char **argv, char **env, int *pipefd);
 void	pipeline(int argc, char **argv, char **env, int *pipefd);
+void	close_stds(void);
 
 // errors
 void	print_error(void);

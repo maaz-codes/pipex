@@ -6,7 +6,7 @@
 /*   By: maakhan <maakhan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 18:52:06 by maakhan           #+#    #+#             */
-/*   Updated: 2024/09/24 21:58:26 by maakhan          ###   ########.fr       */
+/*   Updated: 2024/09/25 08:18:52 by maakhan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,14 +45,15 @@ int	ft_here_doc(char *limiter, char **argv, char **env, int *pipefd)
 	read_write(limiter, doc_pipe[1]);
 	pid = fork();
 	if (pid == -1)
-		(close(doc_pipe[0]), close(pipefd[0]), close(pipefd[1]), print_error());
+		(close(doc_pipe[0]), close(pipefd[0]), close(pipefd[1]), close_stds(),
+			print_error());
 	if (pid == 0)
 	{
 		close(pipefd[0]);
 		cmd = set_cmd_arguments(argv[3]);
 		if (!cmd)
-			(close(doc_pipe[0]), close(pipefd[1]), write(2, "Error in cmd\n",
-					13), exit(127));
+			(close(doc_pipe[0]), close(pipefd[1]), close_stds(), write(2,
+					"Error in cmd\n", 13), close(STDERR_FILENO), exit(127));
 		execute(cmd, env, doc_pipe[0], pipefd[1]);
 	}
 	close(doc_pipe[0]);
