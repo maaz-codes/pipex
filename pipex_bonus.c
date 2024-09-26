@@ -6,7 +6,7 @@
 /*   By: maakhan <maakhan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 18:50:09 by maakhan           #+#    #+#             */
-/*   Updated: 2024/09/25 08:14:10 by maakhan          ###   ########.fr       */
+/*   Updated: 2024/09/25 18:39:37 by maakhan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,12 @@ int	main(int argc, char *argv[], char *env[])
 		if (pipe(pipefd) == -1)
 			(print_error());
 		if (!ft_strncmp(argv[1], "here_doc", 9))
-			ft_here_doc(argv[2], argv, env, pipefd);
+		{
+			if (argc >= 6)
+				ft_here_doc(argv[2], argv, env, pipefd);
+			else
+				return (EXIT_FAILURE);
+		}
 		else
 			first_process(argv, env, pipefd);
 		pipeline(argc, argv, env, pipefd);

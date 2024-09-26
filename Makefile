@@ -5,7 +5,7 @@ SRC 		= 	pipex.c \
 				process.c \
 				errors.c \
 				paths.c \
-				libft/libft.c  libft/ft_split.c \
+				libft/libft.c  libft/ft_split.c libft/ft_strtrim.c \
 				get_next_line/get_next_line.c get_next_line/get_next_line_utils.c \
 
 SRC_BONUS 	= 	pipex_bonus.c \
@@ -13,7 +13,7 @@ SRC_BONUS 	= 	pipex_bonus.c \
 				errors.c \
 				paths.c \
 				here_doc.c \
-				libft/libft.c  libft/ft_split.c \
+				libft/libft.c  libft/ft_split.c libft/ft_strtrim.c \
 				get_next_line/get_next_line.c get_next_line/get_next_line_utils.c \
 
 OBJ = $(SRC:.c=.o)

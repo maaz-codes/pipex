@@ -6,7 +6,7 @@
 /*   By: maakhan <maakhan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 18:49:01 by maakhan           #+#    #+#             */
-/*   Updated: 2024/09/25 07:12:25 by maakhan          ###   ########.fr       */
+/*   Updated: 2024/09/25 17:31:38 by maakhan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include <string.h>
 # include <sys/wait.h>
 # include <unistd.h>
+# include <string.h>
 
 # define BUFFER_SIZE 5
 
@@ -30,6 +31,7 @@ char	*ft_strchr(const char *s, int c);
 char	*ft_strdup(const char *s1);
 char	*ft_strjoin(char const *s1, char const *s2);
 char	**ft_split(const char *s, char c);
+char	*ft_strtrim(char const *s1, char const *set);
 
 // paths
 char	**set_cmd_arguments(char *cmd);

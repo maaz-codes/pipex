@@ -34,6 +34,7 @@ valgrind --leak-check=full --leak-resolution=high -s --trace-children=yes --trac
 17. ./pipex Makefile "sleep 5" "echo hi" outfile 
 17. ./pipex Makefile "sleep 3" "sleep 2" outfile 
 18. ./pipex Makefile "sleep 2" "crt" outfile 
+00. ./pipex Makefile "grep p" "awk '{count++} END {print count}'" outfile 
 
 <!-- program that fails on purpose -->
 19. ./pipex Makefile test/a.out /usr/bin/wc out

@@ -6,7 +6,7 @@
 /*   By: maakhan <maakhan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/24 18:50:20 by maakhan           #+#    #+#             */
-/*   Updated: 2024/09/24 21:02:15 by maakhan          ###   ########.fr       */
+/*   Updated: 2024/09/25 17:40:54 by maakhan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,15 @@ int	count_cmds(char *argv[], int argc)
 	return (count);
 }
 
+// char *argv[] = {"/usr/bin/awk", "{count++} END {print count}", NULL};
 char	**set_cmd_arguments(char *cmd)
 {
 	char	**cmd_args;
 
-	cmd_args = ft_split(cmd, ' ');
+	if (strstr(cmd, "awk"))
+		cmd_args = ft_split(cmd, '\'');
+	else
+		cmd_args = ft_split(cmd, ' ');
 	if (!cmd_args)
 		return (NULL);
 	else if (!cmd_args[0])
@@ -69,19 +73,21 @@ char	*set_own_path(char *cmd)
 	return (NULL);
 }
 
-char	*ft_cmd_exits(char **env, char *cmd)
+char	*ft_cmd_exits(char **env, char *temp_cmd)
 {
 	char	**a_paths;
 	char	*temp_str_join;
 	char	*path;
 	int		i;
+	char	*cmd;
 
-	i = 0;
 	path = NULL;
+	cmd = ft_strtrim(temp_cmd, " ");
 	a_paths = extract_path_env(env);
 	if (!cmd || set_own_path(cmd) || !a_paths)
 		return (free(a_paths), ft_strdup(cmd));
-	while (a_paths[i])
+	i = -1;
+	while (a_paths[++i])
 	{
 		temp_str_join = ft_strjoin(a_paths[i], "/");
 		free(a_paths[i]);
@@ -92,7 +98,6 @@ char	*ft_cmd_exits(char **env, char *cmd)
 			path = ft_strdup(a_paths[i]);
 			break ;
 		}
-		i++;
 	}
-	return (free_array(a_paths), path);
+	return (free_array(a_paths), free(cmd), path);
 }
